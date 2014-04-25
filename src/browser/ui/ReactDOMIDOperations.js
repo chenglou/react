@@ -106,15 +106,34 @@ var ReactDOMIDOperations = {
    * the corresponding style property will be unset.
    *
    * @param {string} id ID of the node to update.
-   * @param {object} styles Mapping from styles to values.
+   * @param {string} styleName
+   * @param {string|number} styleValue
    * @internal
    */
-  updateStylesByID: ReactPerf.measure(
+  updateStyleByID: ReactPerf.measure(
     'ReactDOMIDOperations',
     'updateStylesByID',
+    function(id, styleName, styleValue) {
+      var node = ReactMount.getNode(id);
+      CSSPropertyOperations.setNodeStyleValue(node, styleName, styleValue);
+    }
+  ),
+
+  wipeStyleValuesByID: ReactPerf.measure(
+    'ReactDOMIDOperations',
+    'wipeStyleValuesByID',
     function(id, styles) {
       var node = ReactMount.getNode(id);
-      CSSPropertyOperations.setValueForStyles(node, styles);
+      CSSPropertyOperations.wipeStyleValues(node, styles);
+    }
+  ),
+
+  setAllStyleValuesByID: ReactPerf.measure(
+    'ReactDOMIDOperations',
+    'setAllStyleValuesByID',
+    function(id, styles) {
+      var node = ReactMount.getNode(id);
+      CSSPropertyOperations.setAllStyleValues(node, styles);
     }
   ),
 

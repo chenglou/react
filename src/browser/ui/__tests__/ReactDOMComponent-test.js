@@ -230,7 +230,7 @@ describe('ReactDOMComponent', function() {
       var stub = ReactTestUtils.renderIntoDocument(<div style={styles} />);
 
       var stubStyle = stub.getDOMNode().style;
-
+      debugger;
       stub.receiveComponent({props: {}}, transaction);
       expect(stubStyle.display).toEqual('');
       expect(stubStyle.color).toEqual('');

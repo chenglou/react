@@ -30,6 +30,20 @@ var processStyleName = memoizeStringOnly(function(styleName) {
   return escapeTextForBrowser(hyphenateStyleName(styleName));
 });
 
+function removeStyleValue(node, styleName) {
+  var expansion = CSSProperty.shorthandPropertyExpansions[styleName];
+  var style = node.style;
+  if (expansion) {
+    // Shorthand property that IE8 won't like unsetting, so unset each
+    // component to placate it
+    for (var individualStyleName in expansion) {
+      style[individualStyleName] = '';
+    }
+  } else {
+    style[styleName] = '';
+  }
+}
+
 /**
  * Operations for dealing with CSS properties.
  */
@@ -61,37 +75,35 @@ var CSSPropertyOperations = {
     return serialized || null;
   },
 
-  /**
-   * Sets the value for multiple styles on a node.  If a value is specified as
-   * '' (empty string), the corresponding style property will be unset.
-   *
-   * @param {DOMElement} node
-   * @param {object} styles
-   */
-  setValueForStyles: function(node, styles) {
+  setNodeStyleValue: function(node, styleName, styleValue) {
+    var style = node.style;
+    var processedStyleValue = dangerousStyleValue(styleName, styleValue);
+    if (processedStyleValue) {
+      style[styleName] = processedStyleValue;
+    } else {
+      removeStyleValue(node, styleName);
+    }
+  },
+
+  wipeStyleValues: function(node, styles) {
+    for (var styleName in styles) {
+      if (!styles.hasOwnProperty(styleName)) {
+        continue;
+      }
+      removeStyleValue(node, styleName);
+    }
+  },
+
+  setAllStyleValues: function(node, styles) {
     var style = node.style;
     for (var styleName in styles) {
       if (!styles.hasOwnProperty(styleName)) {
         continue;
       }
       var styleValue = dangerousStyleValue(styleName, styles[styleName]);
-      if (styleValue) {
-        style[styleName] = styleValue;
-      } else {
-        var expansion = CSSProperty.shorthandPropertyExpansions[styleName];
-        if (expansion) {
-          // Shorthand property that IE8 won't like unsetting, so unset each
-          // component to placate it
-          for (var individualStyleName in expansion) {
-            style[individualStyleName] = '';
-          }
-        } else {
-          style[styleName] = '';
-        }
-      }
+      style[styleName] = styleValue;
     }
   }
-
 };
 
 module.exports = CSSPropertyOperations;

@@ -46,6 +46,7 @@ var CONTENT_TYPES = {'string': true, 'number': true};
 
 var STYLE = keyOf({style: null});
 var DATASET = keyOf({dataSet: null});
+var ARIASET = keyOf({ariaSet: null});
 
 var ELEMENT_NODE_TYPE = 1;
 
@@ -358,11 +359,12 @@ ReactDOMComponent.Mixin = {
         continue;
       }
       if (propKey === STYLE) {
+        continue;
         var lastStyle = lastProps[propKey];
         for (styleName in lastStyle) {
           if (lastStyle.hasOwnProperty(styleName)) {
             styleUpdates = styleUpdates || {};
-            styleUpdates[styleName] = '';
+            styleUpdates[styleName] = null;
           }
         }
       } else if (registrationNameModules[propKey]) {
@@ -383,6 +385,7 @@ ReactDOMComponent.Mixin = {
         continue;
       }
       if (propKey === STYLE) {
+        continue;
         if (nextProp) {
           nextProp = nextProps.style = merge(nextProp);
         }
@@ -392,7 +395,7 @@ ReactDOMComponent.Mixin = {
             if (lastProp.hasOwnProperty(styleName) &&
                 !nextProp.hasOwnProperty(styleName)) {
               styleUpdates = styleUpdates || {};
-              styleUpdates[styleName] = '';
+              styleUpdates[styleName] = null;
             }
           }
           // Update styles that changed since `lastProp`.
@@ -419,10 +422,30 @@ ReactDOMComponent.Mixin = {
         );
       }
     }
-    if (styleUpdates) {
+
+    var lastStyle = lastProps.style;
+    var nextStyle = nextProps.style;
+    for (var key in lastStyle) {
+      if (!lastStyle.hasOwnProperty(key) &&
+          nextStyle &&
+          !nextStyle.hasOwnProperty(key)) {
+        continue;
+      }
+      ReactComponent.BackendIDOperations.updateStyleByID(
+        this._rootNodeID,
+        key,
+        null
+      );
+    }
+
+    for (key in nextStyle) {
+      if (!nextStyle.hasOwnProperty(key)) {
+        continue;
+      }
       ReactComponent.BackendIDOperations.updateStylesByID(
         this._rootNodeID,
-        styleUpdates
+        key,
+        nextStyle[key]
       );
     }
   },
